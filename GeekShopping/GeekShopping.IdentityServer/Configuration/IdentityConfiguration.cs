@@ -1,4 +1,5 @@
-﻿using Duende.IdentityServer.Models;
+﻿using Duende.IdentityServer;
+using Duende.IdentityServer.Models;
 
 namespace GeekShopping.IdentityServer.Configuration
 {
@@ -15,7 +16,7 @@ namespace GeekShopping.IdentityServer.Configuration
                 new IdentityResources.Profile(),
             };
 
-        public static IEnumerable<ApiScope> ApiScopes 
+        public static IEnumerable<ApiScope> ApiScopes
             => new List<ApiScope>
             {
                 new ApiScope("geek_shopping", "GeekShopping Server"),
@@ -33,6 +34,21 @@ namespace GeekShopping.IdentityServer.Configuration
                     ClientSecrets = { new Secret("my_super_secret".Sha256())}, //ToDo move to secrets
                     AllowedGrantTypes = GrantTypes.ClientCredentials,
                     AllowedScopes = { "read", "write", "profile"}
+                },
+                new Client
+                {
+                    ClientId = "geek_shopping",
+                    ClientSecrets = { new Secret("my_super_secret".Sha256())}, //ToDo move to secrets
+                    AllowedGrantTypes = GrantTypes.Code,
+                    RedirectUris = { "http://localhost:46538/signin-oidc" },
+                    PostLogoutRedirectUris = { "http://localhost:46538/signount-callback-oidc" },
+                    AllowedScopes = new List<string>
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        IdentityServerConstants.StandardScopes.Email,
+                        "geek_shopping"
+                    }
                 }
             };
     }
