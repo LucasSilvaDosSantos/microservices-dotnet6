@@ -10,8 +10,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-//var connectionString = Configuration["MySQLConnection"];
-
 builder.Services.AddDbContext<MySqlContext>(options => 
     options.UseMySql(builder.Configuration["MySQLConnection:MySqlConnectionString"], new MySqlServerVersion(new Version(8,0,30))));
 
