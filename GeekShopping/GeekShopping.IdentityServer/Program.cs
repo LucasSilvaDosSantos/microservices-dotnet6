@@ -1,4 +1,5 @@
 using GeekShopping.IdentityServer.Configuration;
+using GeekShopping.IdentityServer.Initializer;
 using GeekShopping.IdentityServer.Model;
 using GeekShopping.IdentityServer.Model.Context;
 using Microsoft.AspNetCore.Identity;
@@ -16,19 +17,21 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<MySqlContext>()
     .AddDefaultTokenProviders();
 
-builder.Services.AddIdentityServer(options =>
-    {
-        options.Events.RaiseErrorEvents = true;
-        options.Events.RaiseInformationEvents = true;
-        options.Events.RaiseFailureEvents = true;
-        options.Events.RaiseSuccessEvents = true;
-        options.EmitStaticAudienceClaim = true;
-    }).AddInMemoryIdentityResources(IdentityConfiguration.IdentityResources)
-      .AddInMemoryApiScopes(IdentityConfiguration.ApiScopes)
-      .AddInMemoryClients(IdentityConfiguration.Clients)
-      .AddAspNetIdentity<ApplicationUser>();
+var builderIdentity = builder.Services.AddIdentityServer(options =>
+{
+    options.Events.RaiseErrorEvents = true;
+    options.Events.RaiseInformationEvents = true;
+    options.Events.RaiseFailureEvents = true;
+    options.Events.RaiseSuccessEvents = true;
+    options.EmitStaticAudienceClaim = true;
+}).AddInMemoryIdentityResources(IdentityConfiguration.IdentityResources)
+    .AddInMemoryApiScopes(IdentityConfiguration.ApiScopes)
+    .AddInMemoryClients(IdentityConfiguration.Clients)
+    .AddAspNetIdentity<ApplicationUser>();
 
-//builder.Services.adddeveloperSigninCredential(); ToDo tentar fazer isso em .net6 dessa forma não esta funcionando 
+builder.Services.AddScoped<IDbInitializer, DbInitializer>();
+
+builderIdentity.AddDeveloperSigningCredential();
 
 var app = builder.Build();
 
@@ -43,6 +46,10 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseIdentityServer(); 
 app.UseAuthorization();
+
+var scope = app.Services.CreateScope();
+var dbInitializer = scope.ServiceProvider.GetService<IDbInitializer>();
+dbInitializer.Initialize();
 
 app.MapControllerRoute(
     name: "default",
